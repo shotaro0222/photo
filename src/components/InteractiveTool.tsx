@@ -45,9 +45,10 @@ export default function InteractiveTool({ configStr }: { configStr: string }) {
       ) : (
         <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s' }}>
           <h4 style={{ fontSize: '18px', color: '#0070f3' }}>診断完了！</h4>
-          <p style={{ fontSize: '16px', lineHeight: '1.6', fontWeight: 'bold' }}>
-            {score >= (config.questions.length * 10) / 2 ? config.resultHigh : config.resultLow}
-          </p>
+         <p 
+            style={{ fontSize: '16px', lineHeight: '1.6', fontWeight: 'bold' }}
+            dangerouslySetInnerHTML={{ __html: score >= (config.questions.length * 10) / 2 ? config.resultHigh : config.resultLow }}
+          />
           <button onClick={() => { setStep(0); setScore(0); }} style={{ marginTop: '20px', padding: '8px 20px', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '4px', cursor: 'pointer' }}>
             もう一度やり直す
           </button>
