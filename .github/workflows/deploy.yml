@@ -60,12 +60,11 @@ jobs:
 
       - name: Next.jsでビルド
         run: npm run build
-
-      - name: SSH鍵のセットアップとデプロイ
+- name: SSH鍵のセットアップとデプロイ
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_HOST: ${{ secrets.SSH_HOST }}  # ← ここをSecretsの名前に合わせる
+          FTP_USER: ${{ secrets.SSH_USER }}  # ← ここをSecretsの名前に合わせる
         run: |
           # 1. 鍵の配置
           mkdir -p ~/.ssh
