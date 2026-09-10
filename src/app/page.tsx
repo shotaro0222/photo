@@ -1,6 +1,22 @@
 import Link from 'next/link';
 import fs from 'fs';
 import path from 'path';
+// ★追加：InteractiveTool コンポーネントをインポート
+import InteractiveTool from '../components/InteractiveTool';
+
+// ★追加：Mindful Shutter用のデフォルト診断データ
+const defaultDiagnosisData = {
+  "title": "個人事業主のための『メンタル・疲労度』チェック",
+  "questions": [
+    "休日に仕事の連絡が来ていないか、無意識にスマホやメールを確認しないようにしている。",
+    "寝る直前まで、明日のタスクや売上の不安について考えることがない。",
+    "この1週間で、意図的に「何もしない時間（余白）」を3時間以上作った。",
+    "SNSで同業者の活躍や発信を見ても、過度な焦りや自己嫌悪に陥ることはない。",
+    "仕事やビジネスとは全く関係のない「純粋な趣味」を、心から楽しむ余裕がある。"
+  ],
+  "resultHigh": "非常に良好なメンタルバランスを保てています！心に余白がある今こそ、新しいスキルの習得や仕組み作りに投資する絶好の機会です。<a href='https://reskill.bizpioneer.com' target='_blank' style='color:#2563eb; text-decoration:underline;'>Re:Skill Blog</a> を覗いてみませんか？",
+  "resultLow": "身体と心が悲鳴を上げる一歩手前かもしれません。ビジネスを持続させるには「休むこと」も重要な戦略です。まずはファインダー越しの景色で心を整えましょう。働き方そのものを見直したい時は <a href='https://bizpioneer.com' target='_blank' style='color:#ea580c; text-decoration:underline;'>BizPioneer</a> がヒントになります。"
+};
 
 // ★生成されたMarkdownファイルを読み込む関数
 async function getPosts() {
@@ -82,6 +98,12 @@ export default async function Home() {
           日常にマインドフルネスを取り入れるためのヒントをお届けします。
         </p>
       </section>
+
+      {/* ▼▼▼ 追加：デフォルト診断ツール配置エリア ▼▼▼ */}
+      <section style={{ maxWidth: '800px', margin: '0 auto 40px auto', padding: '0 20px' }}>
+        <InteractiveTool config={defaultDiagnosisData} />
+      </section>
+      {/* ▲▲▲ 追加ここまで ▲▲▲ */}
 
       {/* 記事一覧セクション */}
       <section style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
