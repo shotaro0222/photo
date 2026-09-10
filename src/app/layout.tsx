@@ -10,6 +10,13 @@ export const metadata = {
   description: 'ファインダー越しの、心ととのう時間。',
 };
 
+// ★ 追加：Next.js推奨のモバイル最適化（ビューポート）設定
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -44,6 +51,44 @@ export default function RootLayout({
             `,
           }}
         />
+
+        {/* ★ 追加：レスポンシブ対応用のCSS */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* デフォルト（PC・タブレット横）のレイアウト */
+            .layout-container {
+              max-width: 1000px;
+              margin: 40px auto;
+              display: flex;
+              gap: 40px;
+              padding: 0 20px;
+              align-items: flex-start;
+            }
+            .layout-main {
+              flex: 1;
+              background-color: #fff;
+              padding: 30px;
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+              min-width: 0; /* Flexbox内で文字や画像がはみ出すのを防ぐ */
+            }
+
+            /* スマホ（画面幅768px以下）のレイアウト */
+            @media (max-width: 768px) {
+              .layout-container {
+                flex-direction: column; /* 縦並びに変更 */
+                margin: 20px auto;
+                gap: 24px;
+                padding: 0 15px;
+              }
+              .layout-main {
+                width: 100%;
+                padding: 20px 15px; /* スマホでは余白を少し狭くして読みやすく */
+                box-sizing: border-box;
+              }
+            }
+          `
+        }} />
       </head>
 
       <body style={{ margin: 0, padding: 0, backgroundColor: '#faf9f7', fontFamily: 'sans-serif' }}>
@@ -61,35 +106,21 @@ export default function RootLayout({
         {/* ヘッダー */}
         <Header />
 
-        {/* 2カラムのメインレイアウト */}
-        <div style={{ 
-          maxWidth: '1000px', 
-          margin: '40px auto', 
-          display: 'flex', 
-          gap: '40px',
-          padding: '0 20px',
-          alignItems: 'flex-start' 
-        }}>
+        {/* ★ 修正：インラインスタイルをやめ、クラス名でCSSを適用 */}
+        <div className="layout-container">
           
           {/* 左側：メインコンテンツ（記事一覧や個別記事が入る場所） */}
-          <main style={{ 
-            flex: 1, 
-            backgroundColor: '#fff', 
-            padding: '30px', 
-            borderRadius: '12px', /* 少し丸みを強調 */
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-          }}>
+          <main className="layout-main">
             {children}
           </main>
 
-          {/* 右側：サイドバー */}
+          {/* 右側：サイドバー（スマホでは自動的にメインコンテンツの下に配置されます） */}
           <Sidebar />
           
         </div>
 
         {/* フッター */}
         <footer style={{ textAlign: 'center', padding: '40px 0', color: '#718096', fontSize: '14px' }}>
-          {/* ★ フッターのサイト名も変更しました */}
           © {new Date().getFullYear()} Mindful Shutter. All rights reserved.
         </footer>
       </body>
