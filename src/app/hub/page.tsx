@@ -32,7 +32,6 @@ export default function HubPage() {
           </h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* 戦略 */}
             <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
               <div style={{ backgroundColor: '#ea580c', color: '#fff', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', flexShrink: 0 }}>体</div>
               <div>
@@ -41,7 +40,6 @@ export default function HubPage() {
               </div>
             </div>
             
-            {/* スキル */}
             <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
               <div style={{ backgroundColor: '#0070f3', color: '#fff', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', flexShrink: 0 }}>技</div>
               <div>
@@ -50,7 +48,6 @@ export default function HubPage() {
               </div>
             </div>
 
-            {/* メンタル */}
             <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
               <div style={{ backgroundColor: '#52796f', color: '#fff', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', flexShrink: 0 }}>心</div>
               <div>
@@ -77,9 +74,9 @@ export default function HubPage() {
               required 
               style={{ padding: '16px', fontSize: '16px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', width: '100%', boxSizing: 'border-box' }}
             />
+            {/* ★修正：onClickイベントを削除し、純粋な送信ボタンに変更しました */}
             <button 
-              type="button" 
-              onClick={() => alert('※ ここに実際のメール配信スタンド（Mailchimpなど）の送信処理を組み込みます')}
+              type="submit" 
               style={{ backgroundColor: '#2563eb', color: '#fff', padding: '16px', fontSize: '16px', fontWeight: 'bold', borderRadius: '8px', border: 'none', cursor: 'pointer', transition: 'background 0.2s', width: '100%' }}
             >
               無料レポートを受け取る
