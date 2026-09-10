@@ -58,18 +58,16 @@ jobs:
       - name: Next.jsでビルド
         run: npm run build
 
-      - name: Next.jsでビルド
-        run: npm run build
-- name: SSH鍵のセットアップとデプロイ
+      - name: SSH鍵のセットアップとデプロイ
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          FTP_HOST: ${{ secrets.SSH_HOST }}  # ← ここをSecretsの名前に合わせる
-          FTP_USER: ${{ secrets.SSH_USER }}  # ← ここをSecretsの名前に合わせる
+          FTP_HOST: ${{ secrets.SSH_HOST }}
+          FTP_USER: ${{ secrets.SSH_USER }}
         run: |
           # 1. 鍵の配置
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # 2. rsyncで一発デプロイ（ホスト鍵の確認を強制スキップする最強オプションを追加）
-          rsync -avz --delete -e "ssh -p 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./out/ $FTP_USER@$FTP_HOST:~/re-skill0.com/public_html/
+          # 2. rsyncで一発デプロイ（今回は fudan-photo.com に変更）
+          rsync -avz --delete -e "ssh -p 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./out/ $FTP_USER@$FTP_HOST:~/fudan-photo.com/public_html/
