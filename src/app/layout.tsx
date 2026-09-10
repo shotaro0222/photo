@@ -15,13 +15,39 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const GTM_ID = settings.gtmId;
+  // settings.json から読み込むか、直接画像にあるIDを指定
+  const GTM_ID = settings.gtmId || 'GTM-NCXMFQDT';
 
   return (
     <html lang="ja">
-      {/* ... (GTMのhead部分は省略、そのまま残してください) ... */}
+      <head>
+        {/* 1. <head> 用のGTMコード（Next.jsのScriptコンポーネントを使用） */}
+        <Script
+          id="gtm-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${GTM_ID}');
+            `,
+          }}
+        />
+      </head>
+
       <body style={{ margin: 0, padding: 0, backgroundColor: '#faf9f7', fontFamily: 'sans-serif' }}>
-        {/* ... (GTMのnoscript部分もそのまま) ... */}
+        
+        {/* 2. <body> 直下のGTMコード（style属性をReact用に変換） */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         
         {/* ヘッダー */}
         <Header />
