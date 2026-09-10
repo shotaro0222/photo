@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   const [summary, setSummary] = useState('');
 
   const REPO_OWNER = 'shotaro0222'; 
-  const REPO_NAME = 'fudan-photo.com';
+  const REPO_NAME = 'photo';
   const WORKFLOW_ID = 'deploy.yml';
 
   // 1. 記事生成トリガー
