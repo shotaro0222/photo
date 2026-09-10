@@ -1,0 +1,76 @@
+name: Auto Generate and Deploy
+
+on:
+  schedule:
+    # 3日に1回、日本時間の朝8時（UTC23時）に実行
+    - cron: '0 23 */3 * *'
+  workflow_dispatch:
+    inputs:
+      burst:
+        description: '50記事一括生成を実行'
+        required: false
+        default: 'false'
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.jsのセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: パッケージのインストール
+        run: npm install
+
+      - name: Gemini APIでコンテンツ生成
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # 画面からの入力を環境変数として渡す
+          IS_BURST: ${{ github.event.inputs.burst }} 
+        run: node scripts/generate-article.mjs
+
+      - name: 生成された記事をコミットして保存
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # フォルダが存在しない場合は作成（エラー回避）
+          mkdir -p content/posts
+          git add content/posts/
+          # 生成されたファイル（変更）がある場合のみコミットしてプッシュ
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-generate new article"
+            git push
+          else
+            echo "追加された記事がないため、コミットをスキップしました"
+          fi
+
+      - name: Next.jsでビルド
+        run: npm run build
+
+      - name: Next.jsでビルド
+        run: npm run build
+
+      - name: SSH鍵のセットアップとデプロイ
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+        run: |
+          # 1. 鍵の配置
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # 2. rsyncで一発デプロイ（ホスト鍵の確認を強制スキップする最強オプションを追加）
+          rsync -avz --delete -e "ssh -p 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./out/ $FTP_USER@$FTP_HOST:~/re-skill0.com/public_html/
