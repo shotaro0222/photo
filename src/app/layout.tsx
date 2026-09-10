@@ -4,6 +4,12 @@ import settings from '../data/settings.json'; // パスは適宜合わせてく�
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 
+// ★ ここにmetadataを追加して、ブラウザのタブに表示される名前を変更します
+export const metadata = {
+  title: 'Mindful Shutter',
+  description: 'ファインダー越しの、心ととのう時間。',
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -14,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       {/* ... (GTMのhead部分は省略、そのまま残してください) ... */}
-      <body style={{ margin: 0, padding: 0, backgroundColor: '#fafafa', fontFamily: 'sans-serif' }}>
+      <body style={{ margin: 0, padding: 0, backgroundColor: '#faf9f7', fontFamily: 'sans-serif' }}>
         {/* ... (GTMのnoscript部分もそのまま) ... */}
         
         {/* ヘッダー */}
@@ -35,7 +41,7 @@ export default function RootLayout({
             flex: 1, 
             backgroundColor: '#fff', 
             padding: '30px', 
-            borderRadius: '8px',
+            borderRadius: '12px', /* 少し丸みを強調 */
             boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
           }}>
             {children}
@@ -47,8 +53,9 @@ export default function RootLayout({
         </div>
 
         {/* フッター */}
-        <footer style={{ textAlign: 'center', padding: '40px 0', color: '#999', fontSize: '14px' }}>
-          © {new Date().getFullYear()} Re:Skill Blog. All rights reserved.
+        <footer style={{ textAlign: 'center', padding: '40px 0', color: '#718096', fontSize: '14px' }}>
+          {/* ★ フッターのサイト名も変更しました */}
+          © {new Date().getFullYear()} Mindful Shutter. All rights reserved.
         </footer>
       </body>
     </html>
