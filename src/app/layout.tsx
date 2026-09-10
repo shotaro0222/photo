@@ -21,6 +21,15 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
+        {/* ▼▼▼ 追加：Google AdSense のタグ ▼▼▼ */}
+        <Script
+          id="adsense-script"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8323476567735522"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+
         {/* 1. <head> 用のGTMコード（Next.jsのScriptコンポーネントを使用） */}
         <Script
           id="gtm-script"
