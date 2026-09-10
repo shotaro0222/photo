@@ -46,54 +46,61 @@ export default async function Home() {
   const posts = await getPosts(); 
 
   return (
-    <div>
-      {/* メインビジュアル＆トップメッセージ */}
-      <section style={{ marginBottom: '40px', paddingBottom: '30px', borderBottom: '1px solid #eaeaea', textAlign: 'center' }}>
-        {/* トップページ用の中央ロゴ (SVG: 羅針盤モチーフ) */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+    <div style={{ backgroundColor: '#faf9f7', minHeight: '100vh', padding: '0 0 40px 0' }}>
+      {/* メインビジュアル＆トップメッセージ（背景色を少し温かみのあるオフホワイトに） */}
+      <section style={{ marginBottom: '40px', padding: '40px 20px', borderBottom: '1px solid #e5e5e5', textAlign: 'center', backgroundColor: '#fff' }}>
+        
+        {/* トップページ用の中央ロゴ (SVG: カメラと葉っぱのモチーフ) */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
           <svg width="340" height="48" viewBox="0 0 340 48" xmlns="http://www.w3.org/2000/svg">
-            {/* コンパス（羅針盤）のアイコン */}
-            <circle cx="24" cy="24" r="20" fill="#0f766e" />
-            <polygon points="24,8 32,24 24,40 16,24" fill="#ffffff" opacity="0.9" />
-            <polygon points="24,8 32,24 24,24" fill="#ccfbf1" opacity="0.6" />
-            <circle cx="24" cy="24" r="3" fill="#0f766e" />
+            <g transform="translate(0, 4)">
+              {/* カメラのフラッシュ部分 */}
+              <path d="M 12 12 L 15 6 L 25 6 L 28 12 Z" fill="#52796f" />
+              {/* カメラのボディ */}
+              <rect x="4" y="12" width="32" height="22" rx="4" fill="#52796f" />
+              {/* レンズ */}
+              <circle cx="20" cy="23" r="8" fill="#ffffff" />
+              <circle cx="20" cy="23" r="3" fill="#52796f" />
+              {/* 癒やし・自然を表す葉っぱのアクセント */}
+              <path d="M 30 8 Q 36 0 40 6 Q 34 14 30 8 Z" fill="#84a98c" />
+            </g>
             {/* サイトタイトル */}
-            <text x="56" y="32" fontFamily="sans-serif" fontSize="26" fontWeight="bold" fill="#333">Freelance Compass</text>
+            <text x="56" y="32" fontFamily="sans-serif" fontSize="26" fontWeight="bold" fill="#2d3748">Mindful Shutter</text>
           </svg>
         </div>
 
-        <h1 style={{ fontSize: '24px', color: '#333', marginBottom: '16px', lineHeight: '1.4' }}>
-          フリーランスの航海に、<br />
-          確かな羅針盤を。
+        <h1 style={{ fontSize: '22px', color: '#2d3748', marginBottom: '16px', lineHeight: '1.6', fontWeight: 'normal' }}>
+          ファインダー越しの、<br />
+          心ととのう時間。
         </h1>
-        <p style={{ color: '#666', lineHeight: '1.6', fontSize: '15px' }}>
-          独立・起業のノウハウ、安定した案件獲得のコツ、税金や法務の基礎知識など、<br />
-          個人で働く人のビジネスを加速させる実践的な情報を発信しています。
+        <p style={{ color: '#718096', lineHeight: '1.8', fontSize: '15px', maxWidth: '600px', margin: '0 auto' }}>
+          機材のスペックよりも、心が何を感じたか。<br />
+          カメラを持って歩く「写活」を通じて、メンタルヘルスを整え、<br />
+          日常にマインドフルネスを取り入れるためのヒントをお届けします。
         </p>
       </section>
 
       {/* 記事一覧セクション */}
-      <section>
-        {/* 見出しのデザインも少し変更（左にティール色のライン） */}
-        <h2 style={{ fontSize: '20px', color: '#333', marginBottom: '20px', borderLeft: '4px solid #0f766e', paddingLeft: '10px' }}>
-          最新の記事 ({posts.length}件)
+      <section style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
+        <h2 style={{ fontSize: '18px', color: '#2d3748', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#52796f' }}></span>
+          最新のジャーナル ({posts.length}件)
         </h2>
         
         {posts.length === 0 ? (
-          <div style={{ padding: '40px 20px', textAlign: 'center', background: '#f9f9f9', borderRadius: '8px' }}>
-            <p style={{ color: '#999', margin: 0 }}>現在、公開されている記事はありません。</p>
+          <div style={{ padding: '60px 20px', textAlign: 'center', background: '#fff', borderRadius: '12px', border: '1px solid #eaeaea' }}>
+            <p style={{ color: '#a0aec0', margin: 0 }}>現在、公開されている記事はありません。</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {posts.map(post => (
-              <article key={post.slug} style={{ padding: '20px', border: '1px solid #eaeaea', borderRadius: '8px', background: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>
-                  {/* リンク色もテーマカラーに統一 */}
-                  <Link href={`/posts/${post.slug}`} style={{ color: '#0f766e', textDecoration: 'none' }}>
+              <article key={post.slug} style={{ padding: '24px', border: '1px solid #edf2f7', borderRadius: '12px', background: '#fff', transition: 'box-shadow 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '18px' }}>
+                  <Link href={`/posts/${post.slug}`} style={{ color: '#52796f', textDecoration: 'none', fontWeight: 'bold' }}>
                     {post.title}
                   </Link>
                 </h3>
-                <p style={{ margin: 0, color: '#666', fontSize: '14px', lineHeight: '1.6' }}>{post.excerpt}</p>
+                <p style={{ margin: 0, color: '#718096', fontSize: '14px', lineHeight: '1.7' }}>{post.excerpt}</p>
               </article>
             ))}
           </div>
