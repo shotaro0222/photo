@@ -13,7 +13,7 @@ export default function AdminClient({ keywords }: { keywords: {word: string, cou
 
   const REPO_OWNER = 'shotaro0222'; 
   // ★対象サイトに合わせて変更（reskill.com / conconsalsal.com / photo）
-  const REPO_NAME = 'conconsalsal.com'; 
+  const REPO_NAME = 'photo'; 
 
   // 1. 記事生成トリガー
   const triggerGeneration = async (isBurst = false) => {
