@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "downlevelIteration": true,  // 👈 ★この1行を追加します（最後のカンマを忘れないようにしてください）
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    // ...以下略...
