@@ -52,6 +52,5 @@ export default function AdminPage() {
     console.error("キーワード解析エラー:", error);
   }
 
-  // ビルド時に抽出したキーワードを、ブラウザ側の画面（AdminClient）に渡す
   return <AdminClient keywords={sortedWords} />;
 }
