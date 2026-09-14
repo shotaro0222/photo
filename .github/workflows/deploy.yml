@@ -50,6 +50,7 @@ jobs:
           # 生成されたファイル（変更）がある場合のみコミットしてプッシュ
           if ! git diff --staged --quiet; then
             git commit -m "Auto-generate new article"
+            git pull origin main --rebase   # ★ここに pull（最新版の取得）を追加！
             git push
           else
             echo "追加された記事がないため、コミットをスキップしました"
