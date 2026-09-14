@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 
-export default function AdminClient({ keywords }: { keywords: {word: string, count: number}[] }) {
+// ★変更：filesを受け取るように追加
+export default function AdminClient({ keywords, files = [] }: { keywords: {word: string, count: number}[], files?: string[] }) {
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('');
 
@@ -11,8 +12,12 @@ export default function AdminClient({ keywords }: { keywords: {word: string, cou
   const [adHtml, setAdHtml] = useState('');
   const [summary, setSummary] = useState('');
 
+  // ★追加：リライト用の状態管理
+  const [targetFile, setTargetFile] = useState(files.length > 0 ? files[0] : '');
+  const [rewriteInstruction, setRewriteInstruction] = useState('');
+
   const REPO_OWNER = 'shotaro0222'; 
-  // ★対象サイトに合わせて変更（reskill.com / conconsalsal.com / photo）
+  // ★作業中のサイトに合わせて変更（reskill.com / conconsalsal.com / photo 等）
   const REPO_NAME = 'photo'; 
 
   // 1. 記事生成トリガー
@@ -30,7 +35,7 @@ export default function AdminClient({ keywords }: { keywords: {word: string, cou
     } catch (error: any) { setStatus(`❌ 通信エラー: ${error.message}`); }
   };
 
-  // ★2. 追加：既存記事へのアフィリエイト一括適用トリガー
+  // 2. 既存記事へのアフィリエイト一括適用トリガー
   const triggerApplyAffiliates = async () => {
     setStatus('既存記事への一括適用を起動中...');
     try {
@@ -45,7 +50,33 @@ export default function AdminClient({ keywords }: { keywords: {word: string, cou
     } catch (error: any) { setStatus(`❌ 通信エラー: ${error.message}`); }
   };
 
-  // 3. アフィリエイトデータの登録
+  // ★追加：3. 記事リライトトリガー
+  const triggerRewrite = async () => {
+    if (!targetFile || !rewriteInstruction) return alert('記事を選択し、指示を入力してください。');
+    setStatus(`📝 「${targetFile}」のリライトを起動中...`);
+    try {
+      const cleanToken = token.trim();
+      const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/workflows/rewrite.yml/dispatches`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${cleanToken}`, Accept: 'application/vnd.github.v3+json' },
+        body: JSON.stringify({ 
+          ref: 'main',
+          inputs: { 
+            filename: targetFile,
+            instruction: rewriteInstruction 
+          }
+        }),
+      });
+      if (res.ok) {
+        setStatus(`✅ リライト処理を開始しました！数分後にサイトに反映されます。`);
+        setRewriteInstruction('');
+      } else {
+        setStatus(`❌ エラー: ${res.status}`);
+      }
+    } catch (error: any) { setStatus(`❌ 通信エラー: ${error.message}`); }
+  };
+
+  // 4. アフィリエイトデータの登録
   const saveAffiliate = async () => {
     if (!keyword || !adHtml) return alert('キーワードと広告タグ（HTML）は必須です');
     setStatus('アフィリエイト辞書を更新中...');
@@ -81,18 +112,39 @@ export default function AdminClient({ keywords }: { keywords: {word: string, cou
         <input type="password" placeholder="ghp_から始まるトークンを入力" value={token} onChange={(e) => setToken(e.target.value)} style={{ width: '100%', padding: '10px' }} />
       </div>
 
-      {/* ＝＝＝＝3つのボタンが並ぶエリア＝＝＝＝ */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '40px', flexWrap: 'wrap' }}>
         <button onClick={() => triggerGeneration(false)} style={{ padding: '10px 20px', background: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>📝 今すぐ1記事生成</button>
         <button onClick={() => triggerGeneration(true)} style={{ padding: '10px 20px', background: '#ff4081', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🔥 50記事一括生成</button>
-        <button onClick={triggerApplyAffiliates} style={{ padding: '10px 20px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>🔄 既存の全記事にリンクを適用する</button>
+        <button onClick={triggerApplyAffiliates} style={{ padding: '10px 20px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>🔄 既存の全記事にリンク適用</button>
       </div>
-      {/* ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ */}
+
+      {/* ★追加：AIリライト機能エリア */}
+      <div style={{ background: '#f0fdf4', border: '1px solid #86efac', padding: '20px', borderRadius: '8px', marginBottom: '40px' }}>
+        <h3 style={{ color: '#166534', marginTop: 0 }}>✍️ 指定記事のAIリライト</h3>
+        <p style={{ fontSize: '13px', color: '#15803d', marginBottom: '15px' }}>
+          既存の記事をAIに指示を出して書き直させます。（タイトル等の設定や既存の広告は保護されます）
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <select value={targetFile} onChange={e => setTargetFile(e.target.value)} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}>
+            {files.length === 0 ? <option value="">記事がありません</option> : null}
+            {files.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
+          <textarea 
+            placeholder="例：「もっと専門的な言葉を使って書き直して」「最新のSEO事情の段落を追記して」「全体的に優しい口調に変更して」" 
+            value={rewriteInstruction} 
+            onChange={e => setRewriteInstruction(e.target.value)} 
+            rows={4} 
+            style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+          />
+          <button onClick={triggerRewrite} style={{ padding: '10px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            ✨ この指示でリライトを実行する
+          </button>
+        </div>
+      </div>
 
       <div style={{ marginBottom: '40px' }}>
         <div style={{ padding: '24px', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
           <h2 style={{ fontSize: '20px', color: '#0f172a', marginBottom: '12px', fontWeight: 'bold' }}>📈 頻出キーワード分析</h2>
-          <p style={{ fontSize: '14px', color: '#475569', marginBottom: '20px' }}>AIが使いがちな単語のランキングです。この単語を下のフォームで登録すると自然に挿入されます。</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             {keywords.length === 0 ? (
               <p style={{ color: '#94a3b8' }}>記事がまだないか、解析中です。</p>
@@ -121,7 +173,7 @@ export default function AdminClient({ keywords }: { keywords: {word: string, cou
         </div>
       </div>
 
-      {status && <div style={{ padding: '15px', background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '4px', fontWeight: 'bold' }}>{status}</div>}
+      {status && <div style={{ padding: '15px', background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '4px', fontWeight: 'bold', whiteSpace: 'pre-wrap' }}>{status}</div>}
     </div>
   );
 }
