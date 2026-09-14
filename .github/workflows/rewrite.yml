@@ -1,0 +1,62 @@
+name: Rewrite Article
+
+on:
+  workflow_dispatch:
+    inputs:
+      filename:
+        description: '対象ファイル名'
+        required: true
+      instruction:
+        description: 'リライト指示'
+        required: true
+
+jobs:
+  rewrite-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: パッケージのインストール
+        run: npm install
+
+      - name: リライト処理の実行
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TARGET_FILE: ${{ github.event.inputs.filename }}
+          INSTRUCTION: ${{ github.event.inputs.instruction }}
+        run: node scripts/rewrite-article.mjs
+
+      - name: 変更をコミットして保存
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add content/posts/
+          if ! git diff --staged --quiet; then
+            git commit -m "Rewrite article: ${{ github.event.inputs.filename }}"
+            git pull origin main --rebase
+            git push
+          else
+            echo "変更がありませんでした"
+          fi
+
+      - name: Next.jsでビルド
+        run: npm run build
+
+      - name: SSH鍵のセットアップとデプロイ
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          # ★注意：ここの変数名(FTP_HOST等)とドメイン名は、通常のdeploy.ymlと同じものに書き換えてください
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # ★★★ 一番最後にあるアップロード先のドメイン（例: re-skill0.com 等）も修正してください ★★★
+          rsync -avz --delete -e "ssh -p 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./out/ $FTP_USER@$FTP_HOST:~/re-skill0.com/public_html/
