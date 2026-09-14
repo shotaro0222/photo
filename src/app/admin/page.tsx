@@ -5,17 +5,20 @@ import AdminClient from './AdminClient';
 export default function AdminPage() {
   const postsDirectory = path.join(process.cwd(), 'content/posts');
   let sortedWords: {word: string, count: number}[] = [];
+  let articleFiles: string[] = []; // ★追加：記事ファイルの一覧
 
   try {
     if (fs.existsSync(postsDirectory)) {
       const filenames = fs.readdirSync(postsDirectory).filter(f => f.endsWith('.md'));
-      let allText = '';
+      
+      // ★追加：ファイル名を新しい順（降順）に並び替え
+      articleFiles = [...filenames].sort((a, b) => b.localeCompare(a));
 
+      let allText = '';
       filenames.forEach(filename => {
         const filePath = path.join(postsDirectory, filename);
         const content = fs.readFileSync(filePath, 'utf8');
         
-        // 解析の邪魔になる記号を削除
         const cleanContent = content
           .replace(/---[\s\S]*?---/g, '') 
           .replace(/```[\s\S]*?```/g, '') 
@@ -52,5 +55,6 @@ export default function AdminPage() {
     console.error("キーワード解析エラー:", error);
   }
 
-  return <AdminClient keywords={sortedWords} />;
+  // ★変更：filesを画面側に渡す
+  return <AdminClient keywords={sortedWords} files={articleFiles} />;
 }
