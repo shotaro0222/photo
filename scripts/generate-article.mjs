@@ -58,8 +58,13 @@ ${availableImages.map(img => `- ${img.url} (内容: ${img.alt})`).join('\n')}
   const result = await model.generateContent(prompt);
   let content = result.response.text();
 
-  // AIが親切心で ```markdown という記号をつけてきた場合は除去する
-  content = content.replace(/^```(markdown)?\n/, '').replace(/\n```$/, '');
+  // ★修正：AIが記事全体を ```markdown で囲ってきた場合のみ、外側のラッパーを除去する
+  // これにより、末尾のJSONブロックの ``` が誤って消されることを完全に防ぎます。
+  content = content.trim();
+  const outerWrapperMatch = content.match(/^```(?:markdown|md)?\s*\n([\s\S]*)\n```$/);
+  if (outerWrapperMatch) {
+    content = outerWrapperMatch[1].trim();
+  }
 
   // ★【修正箇所】タイトル部分（Frontmatter）を切り離して、広告挿入から保護する
   let frontmatter = '';
