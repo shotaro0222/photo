@@ -25,17 +25,23 @@ export function injectAffiliateLinks(content, filename = 'ファイル') {
   }
 
   // ② JSONなどのコードブロック（```で囲まれた部分）の保護
-  // コードブロックを一旦抜き出し、仮の目印（プレースホルダー）に置き換えます
   const codeBlocks = [];
   body = body.replace(/```[\s\S]*?```/g, (match) => {
     codeBlocks.push(match);
     return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
   });
 
+  // ③ 【追加】Markdownの表（テーブル）の保護
+  // 行の先頭が「|」で始まる連続した行（表）をごっそり保護対象にする
+  const tableBlocks = [];
+  body = body.replace(/^(?:[ \t]*\|.*(?:\r?\n|$))+/gm, (match) => {
+    tableBlocks.push(match);
+    return `___TABLE_BLOCK_${tableBlocks.length - 1}___\n`;
+  });
+
   // ==========================================
   // 【2】 アフィリエイト広告の挿入プロセス
   // ==========================================
-  
   let updatedContent = body;
 
   affiliates.forEach((aff) => {
@@ -97,11 +103,16 @@ export function injectAffiliateLinks(content, filename = 'ファイル') {
   // 【3】 保護していた要素の「復元」プロセス
   // ==========================================
   
-  // 目印（プレースホルダー）を、元のJSONやコードブロックに戻す
+  // ③ 表（テーブル）の復元
+  tableBlocks.forEach((block, idx) => {
+    updatedContent = updatedContent.replace(`___TABLE_BLOCK_${idx}___\n`, block);
+  });
+
+  // ② コードブロックの復元
   codeBlocks.forEach((block, idx) => {
     updatedContent = updatedContent.replace(`___CODE_BLOCK_${idx}___`, block);
   });
 
-  // 最後にタイトル（Frontmatter）をくっつけて返す
+  // ① 最後にタイトル（Frontmatter）をくっつけて返す
   return frontmatter + updatedContent;
 }
