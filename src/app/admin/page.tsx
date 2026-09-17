@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import AdminClient from './AdminClient';
+// ★追加：作成した画像アップローダーをインポート
+import ImageUploader from '@/components/ImageUploader';
 
 export default function AdminPage() {
   const postsDirectory = path.join(process.cwd(), 'content/posts');
@@ -55,6 +57,24 @@ export default function AdminPage() {
     console.error("キーワード解析エラー:", error);
   }
 
-  // ★変更：filesを画面側に渡す
-  return <AdminClient keywords={sortedWords} files={articleFiles} />;
+  // ★変更：AdminClientとImageUploaderを並べるグリッドレイアウトに変更
+  return (
+    <div className="p-4 md:p-8 min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* 左側（メイン）：既存の記事一覧とキーワード解析 */}
+          <div className="lg:col-span-2">
+            <AdminClient keywords={sortedWords} files={articleFiles} />
+          </div>
+          
+          {/* 右側（サイドバー）：画像アップローダー */}
+          <div className="lg:col-span-1">
+            <ImageUploader />
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  );
 }
