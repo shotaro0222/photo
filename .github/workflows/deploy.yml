@@ -9,7 +9,8 @@ on:
       burst:
         description: '50記事一括生成を実行'
         required: false
-        default: 'false'
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -42,7 +43,8 @@ jobs:
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          IS_BURST: ${{ github.event.inputs.burst }} 
+          # schedule実行時（inputsが無い場合）のフォールバックを追加
+          IS_BURST: ${{ inputs.burst || 'false' }}
         run: node scripts/generate-article.mjs
 
       - name: 生成された記事と画像リストをコミットして保存
