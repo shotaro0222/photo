@@ -32,28 +32,33 @@ jobs:
       - name: パッケージのインストール
         run: npm install
 
+      # ★ 超重要追加：AIが記事を書く前に、Xserverから最新の画像リストをダウンロードする
+      - name: サーバーから最新の画像リストを取得
+        run: |
+          mkdir -p src/data
+          curl -f -s https://re-skill0.com/src/data/media.json -o src/data/media.json || echo "[]" > src/data/media.json
+
       - name: Gemini APIでコンテンツ生成
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # 画面からの入力を環境変数として渡す
           IS_BURST: ${{ github.event.inputs.burst }} 
         run: node scripts/generate-article.mjs
 
-      - name: 生成された記事をコミットして保存
+      - name: 生成された記事と画像リストをコミットして保存
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # フォルダが存在しない場合は作成（エラー回避）
           mkdir -p content/posts
-          git add content/posts/
-          # 生成されたファイル（変更）がある場合のみコミットしてプッシュ
+          
+          # ★ 変更：media.json も変更があれば一緒にコミットしてGitの記憶を更新する
+          git add content/posts/ src/data/media.json
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-generate new article"
-            git pull origin main --rebase   # ★ここに pull（最新版の取得）を追加！
+            git commit -m "Auto-generate new article and sync media.json"
+            git pull origin main --rebase
             git push
           else
-            echo "追加された記事がないため、コミットをスキップしました"
+            echo "追加された記事や画像の変更がないため、コミットをスキップしました"
           fi
 
       - name: Next.jsでビルド
@@ -62,13 +67,19 @@ jobs:
       - name: SSH鍵のセットアップとデプロイ
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          FTP_HOST: ${{ secrets.SSH_HOST }}
-          FTP_USER: ${{ secrets.SSH_USER }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
         run: |
           # 1. 鍵の配置
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # 2. rsyncで一発デプロイ（今回は fudan-photo.com に変更）
-          rsync -avz --delete -e "ssh -p 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./out/ $FTP_USER@$FTP_HOST:~/fudan-photo.com/public_html/
+          # 2. rsyncで一発デプロイ
+          # ★ 変更：--exclude を追加し、Xserver上の画像やPHPが消し飛ばされるのを防ぐ
+          rsync -avz --delete \
+            --exclude="upload-api.php" \
+            --exclude="uploads/" \
+            --exclude="src/" \
+            -e "ssh -p 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" \
+            ./out/ $FTP_USER@$FTP_HOST:~/fudan-photo.com/public_html/
