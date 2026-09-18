@@ -69,8 +69,8 @@ jobs:
       - name: SSH鍵のセットアップとデプロイ
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_HOST: ${{ secrets.SSH_HOST }}
+          FTP_USER: ${{ secrets.SSH_USER }}
         run: |
           # 1. 鍵の配置
           mkdir -p ~/.ssh
@@ -84,4 +84,4 @@ jobs:
             --exclude="uploads/" \
             --exclude="src/" \
             -e "ssh -p 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" \
-            ./out/ $FTP_USER@$FTP_HOST:~/fudan-photo.com/public_html/
+            ./out/ $SSH_USER@$SSH_HOST:~/fudan-photo.com/public_html/
