@@ -6,7 +6,7 @@ import InteractiveTool from '../components/InteractiveTool';
 
 // ★追加：Mindful Shutter用のデフォルト診断データ
 const defaultDiagnosisData = {
-  "title": "個人事業主のための『メンタル・疲労度』チェック",
+  "title": "ビジネスパーソンのための『メンタル・疲労度』チェック",
   "questions": [
     "休日に仕事の連絡が来ていないか、無意識にスマホやメールを確認しないようにしている。",
     "寝る直前まで、明日のタスクや売上の不安について考えることがない。",
@@ -71,6 +71,11 @@ export default async function Home() {
 
   return (
     <div style={{ backgroundColor: '#faf9f7', minHeight: '100vh', padding: '0 0 40px 0' }}>
+      {/* ★ 追加：プロモーション表記（画面最上部に小さく表示） */}
+      <div style={{ textAlign: 'center', fontSize: '12px', color: '#888', paddingTop: '10px' }}>
+        ※このサイトはプロモーションを含んでいます
+      </div>
+
       {/* メインビジュアル＆トップメッセージ */}
       <section style={{ marginBottom: '40px', padding: '40px 20px', borderBottom: '1px solid #e5e5e5', textAlign: 'center', backgroundColor: '#fff' }}>
         
@@ -99,7 +104,7 @@ export default async function Home() {
         </p>
       </section>
 
-{/* ▼▼▼ 追加：デフォルト診断ツール配置エリア ▼▼▼ */}
+      {/* ▼▼▼ 追加：デフォルト診断ツール配置エリア ▼▼▼ */}
       <section style={{ maxWidth: '800px', margin: '0 auto 40px auto', padding: '0 20px' }}>
         <InteractiveTool configStr={JSON.stringify(defaultDiagnosisData)} />
       </section>
