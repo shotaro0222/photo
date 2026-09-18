@@ -1,4 +1,72 @@
-- name: SSH鍵のセットアップとデプロイ
+name: Auto Generate and Deploy
+
+on:
+  schedule:
+    # 3日に1回、日本時間の朝8時（UTC23時）に実行
+    - cron: '0 23 */3 * *'
+  workflow_dispatch:
+    inputs:
+      burst:
+        description: '50記事一括生成を実行'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.jsのセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: パッケージのインストール
+        run: npm install
+
+      # ★ 超重要追加：AIが記事を書く前に、Xserverから最新の画像リストをダウンロードする
+      - name: サーバーから最新の画像リストを取得
+        run: |
+          mkdir -p src/data
+          curl -f -s https://re-skill0.com/src/data/media.json -o src/data/media.json || echo "[]" > src/data/media.json
+
+      - name: Gemini APIでコンテンツ生成
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # schedule実行時（inputsが無い場合）のフォールバックを追加
+          IS_BURST: ${{ inputs.burst || 'false' }}
+        run: node scripts/generate-article.mjs
+
+      - name: 生成された記事と画像リストをコミットして保存
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          mkdir -p content/posts
+          
+          # ★ 変更：media.json も変更があれば一緒にコミットしてGitの記憶を更新する
+          git add content/posts/ src/data/media.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-generate new article and sync media.json"
+            git pull origin main --rebase
+            git push
+          else
+            echo "追加された記事や画像の変更がないため、コミットをスキップしました"
+          fi
+
+      - name: Next.jsでビルド
+        run: npm run build
+
+      - name: SSH鍵のセットアップとデプロイ
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           # ★修正：変数の名前を「FTP_」から「SSH_」に合わせる
