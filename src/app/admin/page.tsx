@@ -67,85 +67,23 @@ export default function AdminDashboard() {
     setStatus('画像をアップロード中...');
 
     try {
-      const cleanToken = token.trim();
-      const safeName = selectedFile.name
-        .trim()
-        .replace(/[^a-zA-Z0-9._-]/g, '-')
-        .replace(/-+/g, '-');
-      const uniqueName = `${Date.now()}-${safeName}`;
-      const filePath = `public/uploads/${uniqueName}`;
-      const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
+      const formData = new FormData();
+      formData.append('token', token.trim());
+      formData.append('alt', imageAlt);
+      formData.append('file', selectedFile);
 
-      const bytes = new Uint8Array(await selectedFile.arrayBuffer());
-      let binary = '';
-      bytes.forEach((byte) => {
-        binary += String.fromCharCode(byte);
-      });
-      const base64Content = btoa(binary);
-
-      const uploadRes = await fetch(apiUrl, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${cleanToken}`,
-          Accept: 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: `Upload image: ${uniqueName}`,
-          content: base64Content,
-          branch: 'main'
-        })
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData
       });
 
-      if (!uploadRes.ok) {
-        const errorData = await uploadRes.json().catch(() => ({}));
-        throw new Error(errorData.message || `アップロード失敗: ${uploadRes.status}`);
+      const result = await res.json();
+
+      if (!res.ok || !result.ok) {
+        throw new Error(result.error || `アップロード失敗: ${res.status}`);
       }
 
-      const mediaApiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/src/data/media.json`;
-      const mediaRes = await fetch(mediaApiUrl, {
-        headers: { Authorization: `Bearer ${cleanToken}` }
-      });
-
-      let currentData: Array<{ id: string; url: string; alt: string }> = [];
-      let mediaSha = '';
-
-      if (mediaRes.ok) {
-        const mediaData = await mediaRes.json();
-        mediaSha = mediaData.sha || '';
-        const decodedContent = decodeURIComponent(escape(atob(mediaData.content)));
-        currentData = JSON.parse(decodedContent || '[]');
-      }
-
-      const mediaEntry = {
-        id: `media-${Date.now()}`,
-        url: `/uploads/${uniqueName}`,
-        alt: imageAlt || selectedFile.name.replace(/\.[^/.]+$/, '') || 'アップロード画像'
-      };
-
-      const updatedMedia = [...currentData, mediaEntry];
-      const encodedContent = btoa(unescape(encodeURIComponent(JSON.stringify(updatedMedia, null, 2))));
-
-      const mediaWriteRes = await fetch(mediaApiUrl, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${cleanToken}`,
-          Accept: 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: `Update media list: ${uniqueName}`,
-          content: encodedContent,
-          sha: mediaSha
-        })
-      });
-
-      if (!mediaWriteRes.ok) {
-        const errorData = await mediaWriteRes.json().catch(() => ({}));
-        throw new Error(errorData.message || `メディア一覧の更新に失敗しました`);
-      }
-
-      setStatus(`✅ 画像をアップロードしてメディア一覧に追加しました: ${mediaEntry.url}`);
+      setStatus(`✅ 画像をアップロードしてメディア一覧に追加しました: ${result.url}`);
       setSelectedFile(null);
       setImageAlt('');
       const input = document.getElementById('image-upload-input') as HTMLInputElement | null;
