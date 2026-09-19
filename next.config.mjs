@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  trailingSlash: true, // ★この1行を追加します
-  // （もし他の設定が既に書かれていれば、それはそのまま残してください）
+  output: 'export', // ← 既存の設定はそのまま残してください
+  
+  // ★追加：ビルドのタイムアウトをデフォルトの60秒から300秒（5分）に延長
+  staticPageGenerationTimeout: 300, 
 };
 
-export default nextConfig; // 環境によっては module.exports = nextConfig; になっています
+export default nextConfig;
