@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { injectAffiliateLinks } from './injectAffiliates.mjs';
+import { buildKeywordMap, injectInternalLinks } from './injectInternalLinks.mjs'; // ★ 追加
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const runCount = process.env.IS_BURST === 'true' ? 50 : 1;
@@ -92,7 +93,13 @@ ${availableImages.map(img => `- ${img.url} (内容: ${img.alt})`).join('\n')}
     }
   }
 
+  // ★ 変更：アフィリエイト挿入後に内部リンクも自動挿入する
   body = injectAffiliateLinks(body);
+  
+  const postsDirectory = path.resolve(process.cwd(), 'content/posts');
+  const keywordMap = buildKeywordMap(postsDirectory);
+  body = injectInternalLinks(body, keywordMap);
+
   content = frontmatter + body;
 
   const dateStr = new Date().toISOString().replace(/[:.]/g, '-');
@@ -104,7 +111,7 @@ ${availableImages.map(img => `- ${img.url} (内容: ${img.alt})`).join('\n')}
   }
 
   fs.writeFileSync(path.join(dirPath, filename), content);
-  console.log(`✅ 記事生成完了: ${filename} (履歴件数: ${generatedTitlesHistory.length})`);
+  console.log(`✅ 記事生成完了: ${filename} (内部リンク処理済) (履歴件数: ${generatedTitlesHistory.length})`);
   
   await new Promise(resolve => setTimeout(resolve, 15000));
 }
