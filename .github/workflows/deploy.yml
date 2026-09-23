@@ -37,14 +37,12 @@ jobs:
       - name: サーバーから最新の画像リストを取得
         run: |
           mkdir -p src/data
-          # ↓ ドメインが re-skill0.com になっていたため、fudan-photo.com に修正しました
           curl -f -s https://fudan-photo.com/src/data/media.json -o src/data/media.json || echo "[]" > src/data/media.json
 
       - name: Gemini APIでコンテンツ生成
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # schedule実行時（inputsが無い場合）のフォールバックを追加
           IS_BURST: ${{ inputs.burst || 'false' }}
         run: node scripts/generate-article.mjs
 
@@ -83,10 +81,9 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           
           # 2. Next.jsのビルド結果を1つの圧縮ファイルにまとめる
-          # これにより大量の小さなファイルを1つずつ送る通信オーバーヘッドをゼロにする
           tar -czf deploy.tar.gz -C out .
           
-          # 3. 圧縮ファイルをXserverのホームディレクトリに送信（ファイル1つなので通信が安定・爆速）
+          # 3. 圧縮ファイルをXserverのホームディレクトリに送信
           scp -P 10022 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa deploy.tar.gz $SSH_USER@$SSH_HOST:~/
           
           # 4. サーバー側（Xserver）に入って解凍し、サーバー内部でrsyncを実行する
@@ -95,16 +92,13 @@ jobs:
             mkdir -p ~/temp_deploy
             tar -xzf ~/deploy.tar.gz -C ~/temp_deploy
             
-            # サーバー内部でのrsync（一瞬で終わります）
-            # ★ 修正：消えては困るファイル群（.htaccess, admin, 画像フォルダ）を除外
+            # サーバー内部でのrsync
+            # ★ 修正：実在しないフォルダの除外設定を削除し、本当に必要なものだけ残す
             rsync -av --delete \
               --exclude="upload-api.php" \
               --exclude="uploads/" \
               --exclude="src/" \
               --exclude=".htaccess" \
-              --exclude="admin/" \
-              --exclude="Photo/" \
-              --exclude="photo/" \
               ~/temp_deploy/ ~/fudan-photo.com/public_html/
               
             # 展開が終わったら作業用のゴミ箱を空にする
