@@ -96,11 +96,15 @@ jobs:
             tar -xzf ~/deploy.tar.gz -C ~/temp_deploy
             
             # サーバー内部でのrsync（一瞬で終わります）
-            # 除外ルールと削除ルールをこれまで通り適用
+            # ★ 修正：消えては困るファイル群（.htaccess, admin, 画像フォルダ）を除外
             rsync -av --delete \
               --exclude="upload-api.php" \
               --exclude="uploads/" \
               --exclude="src/" \
+              --exclude=".htaccess" \
+              --exclude="admin/" \
+              --exclude="Photo/" \
+              --exclude="photo/" \
               ~/temp_deploy/ ~/fudan-photo.com/public_html/
               
             # 展開が終わったら作業用のゴミ箱を空にする
