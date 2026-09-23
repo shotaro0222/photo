@@ -3,6 +3,7 @@ import Script from 'next/script';
 import settings from '../data/settings.json'; // パスは適宜合わせてください
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
+import Ranking from '../components/Ranking'; // ★ 追加：ランキングコンポーネントをインポート
 
 // ★ ここにmetadataを追加して、ブラウザのタブに表示される名前を変更します
 export const metadata = {
@@ -72,6 +73,15 @@ export default function RootLayout({
               box-shadow: 0 2px 8px rgba(0,0,0,0.05);
               min-width: 0; /* Flexbox内で文字や画像がはみ出すのを防ぐ */
             }
+            
+            /* ★ 追加：サイドバーとランキングをまとめるラッパー */
+            .layout-sidebar-wrapper {
+              width: 300px;
+              flex-shrink: 0;
+              display: flex;
+              flex-direction: column;
+              gap: 24px;
+            }
 
             /* スマホ（画面幅768px以下）のレイアウト */
             @media (max-width: 768px) {
@@ -81,8 +91,11 @@ export default function RootLayout({
                 gap: 24px;
                 padding: 0 15px;
               }
-              .layout-main {
+              /* ★ 修正：メインもサイドバーも横幅100%に */
+              .layout-main, .layout-sidebar-wrapper {
                 width: 100%;
+              }
+              .layout-main {
                 padding: 20px 15px; /* スマホでは余白を少し狭くして読みやすく */
                 box-sizing: border-box;
               }
@@ -106,7 +119,7 @@ export default function RootLayout({
         {/* ヘッダー */}
         <Header />
 
-        {/* ★ 修正：インラインスタイルをやめ、クラス名でCSSを適用 */}
+        {/* インラインスタイルをやめ、クラス名でCSSを適用 */}
         <div className="layout-container">
           
           {/* 左側：メインコンテンツ（記事一覧や個別記事が入る場所） */}
@@ -114,8 +127,11 @@ export default function RootLayout({
             {children}
           </main>
 
-          {/* 右側：サイドバー（スマホでは自動的にメインコンテンツの下に配置されます） */}
-          <Sidebar />
+          {/* 右側：ランキング ＆ サイドバー（スマホでは自動的にメインコンテンツの下に配置されます） */}
+          <aside className="layout-sidebar-wrapper">
+            <Ranking />
+            <Sidebar />
+          </aside>
           
         </div>
 
